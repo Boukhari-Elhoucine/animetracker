@@ -12,14 +12,16 @@ import { useForm, Controller } from "react-hook-form";
 import tw from "tailwind-react-native-classnames";
 import { auth } from "../firebase";
 
-const RegisterScreen = () => {
+const RegisterScreen = ({ navigation }) => {
   const signUp = (data) => {
     auth
       .createUserWithEmailAndPassword(data.email, data.password)
       .then((authUser) => {
-        authUser.user.updateProfile({
-          displayName: data.fullname,
-        });
+        authUser.user
+          .updateProfile({
+            displayName: data.fullname,
+          })
+          .then(() => navigation.navigate("Login"));
       })
       .catch((err) => alert(err.message));
   };
@@ -57,6 +59,9 @@ const RegisterScreen = () => {
             name="fullname"
             defaultValue=""
           />
+          {errors.fullname && (
+            <Text style={tw`text-red-400 mb-1`}>{errors.fullname.message}</Text>
+          )}
           <Controller
             control={control}
             rules={{
@@ -79,6 +84,9 @@ const RegisterScreen = () => {
             name="email"
             defaultValue=""
           />
+          {errors.email && (
+            <Text style={tw`text-red-400 mb-1`}>{errors.email.message}</Text>
+          )}
           <Controller
             control={control}
             rules={{
@@ -102,6 +110,9 @@ const RegisterScreen = () => {
             name="password"
             defaultValue=""
           />
+          {errors.password && (
+            <Text style={tw`text-red-400 mb-1`}>{errors.password.message}</Text>
+          )}
           <TouchableHighlight
             disabled={!isValid || isSubmitting}
             style={tw` self-center rounded-md overflow-hidden`}

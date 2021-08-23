@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -13,13 +13,25 @@ import tw from "tailwind-react-native-classnames";
 import { useForm, Controller } from "react-hook-form";
 import { auth } from "../firebase";
 const LoginScreen = ({ navigation }) => {
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigation.replace("Home");
+      }
+    });
+    return unsub;
+  }, [navigation]);
   const buttonAnimation = useState(new Animated.Value(0))[0];
   const {
     control,
     handleSubmit,
     formState: { isValid, errors, isSubmitting },
   } = useForm({ mode: "onBlur" });
-  const Login = (data) => {};
+  const Login = (data) => {
+    auth
+      .signInWithEmailAndPassword(data.email, data.password)
+      .catch((err) => alert(err));
+  };
   useLayoutEffect(() => {
     Animated.spring(buttonAnimation, {
       toValue: 1,
@@ -52,6 +64,9 @@ const LoginScreen = ({ navigation }) => {
           name="email"
           defaultValue=""
         />
+        {errors.email && (
+          <Text style={tw`text-red-400 mb-1`}>{errors.email.message}</Text>
+        )}
         <Controller
           control={control}
           rules={{ required: true }}
@@ -69,6 +84,9 @@ const LoginScreen = ({ navigation }) => {
           name="password"
           defaultValue=""
         />
+        {errors.password && (
+          <Text style={tw`text-red-400 mb-1`}>{errors.password.message}</Text>
+        )}
       </View>
       <TouchableHighlight
         disabled={!isValid || isSubmitting}
